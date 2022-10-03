@@ -78,7 +78,7 @@ fastify.get("/task/delete", async (req, reply)=>{
         reply.status(404).send({error:"Таблица не найдена", code:1})
     }else{
         for (const column of db[req.query.table_id].columns) {
-            const finded = column.tasks.find((data) => data.id != req.query.id);
+            const finded = column.tasks.find((data) => data.id == req.query.id);
             if (finded) {
                 const index = column.tasks.indexOf(finded);
                 column.tasks.splice(index, 1);
@@ -112,6 +112,24 @@ fastify.get("/task/move", async (req, reply)=>{
         }else{
             reply.status(400).send({error:"Не указанна таблица (position)"})
         }
+    }
+})
+
+fastify.get("/task/change", async (req, reply)=>{
+    if (!db[req.query.table_id]) {
+        reply.status(404).send({error:"Таблица не найдена", code:1})
+    }else{
+        let {description} = req.query;
+        for (const column of db[req.query.table_id].columns) {
+            const finded = column.tasks.find((data) => data.id == req.query.id);
+            if (finded) {
+                const index = column.tasks.indexOf(finded);
+                column.tasks[index].description=description;
+                dbSave();
+                reply.send(db[req.query.table_id]);
+            }
+        }
+        reply.status(404).send({error:"Таск не найден", code:2})
     }
 })
 
